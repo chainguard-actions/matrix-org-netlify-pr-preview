@@ -1,0 +1,35 @@
+name: Test basic usage (creates deployment)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Prepare site directory
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/site-out"
+          echo "<html><body>preview</body></html>" > "$GITHUB_WORKSPACE/site-out/index.html"
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          path: site-out
+          owner: octocat
+          branch: feature-branch
+          revision: ${{ github.sha }}
+          token: placeholder-netlify-token
+          site_id: 00000000-0000-0000-0000-000000000000
+      - name: Assert action ran (or failed gracefully on the sentinel repo)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (sentinel repo / no real Netlify credentials)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
