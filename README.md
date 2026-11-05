@@ -1,15 +1,5 @@
-# matrix-org/netlify-pr-preview
-
-Helper action to deploy PR previews to Netlify.
-
-Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/matrix-org/netlify-pr-preview](https://github.com/matrix-org/netlify-pr-preview).
-
-## Versions
-
-| Version | Tag | Upstream commit | Hardening report |
-|---------|-----|-----------------|------------------|
-| v1 | [`v1`](https://github.com/chainguard-actions/matrix-org-netlify-pr-preview/tree/v1) | [`8d1f7d1`](https://github.com/matrix-org/netlify-pr-preview/commit/8d1f7d1b1e3dc3d3e2b81e35ae86c19cda0556f7) | [`HARDENING.md`](https://github.com/chainguard-actions/matrix-org-netlify-pr-preview/blob/v1/HARDENING.md) |
-| v3 | [`v3`](https://github.com/chainguard-actions/matrix-org-netlify-pr-preview/tree/v3) | [`9805cd1`](https://github.com/matrix-org/netlify-pr-preview/commit/9805cd123fc9a7e421e35340a05e1ebc5dee46b5) | [`HARDENING.md`](https://github.com/chainguard-actions/matrix-org-netlify-pr-preview/blob/v3/HARDENING.md) |
+# netlify-pr-preview
+A Github Action for deploying a PR preview to Netlify with a github deployment from a workflow run
 
 ## Privacy
 

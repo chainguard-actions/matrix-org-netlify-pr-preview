@@ -1,0 +1,120 @@
+# Must only be ran from a successful workflow_run caused by a pull_request, if condition e.g.
+# github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'pull_request'
+name: Netlify PR Preview
+description: Helper action to deploy PR previews to Netlify.
+inputs:
+  path:
+    type: string
+    required: true
+    description: The path to the directory which should be deployed into Netlify
+  desc:
+    type: string
+    required: false
+    description: The description to set on the Github Deployment
+    default: |
+      Do you trust the author of this PR? Maybe this build will steal your keys or give you malware.
+      Exercise caution. Use test accounts.
+  prefix:
+    type: string
+    required: false
+    description: The prefix to use before the PR number in the Netlify subdomain
+    default: pr
+  deployment_env:
+    type: string
+    required: false
+    description: The Github environment with which to associate this deployment
+    default: Netlify
+  deployment_id:
+    type: string
+    required: false
+    description: The ID of an existing deployment to continue as part of this Netlify deployment, one will be created otherwise
+
+  # We cannot use ${{ github.repository_owner }} as in workflow runs from forks it'll be the upstream org
+  owner:
+    type: string
+    required: true
+    description: The owner (login) of the head repo of the PR
+  # We cannot use ${{ github.ref_name }} as in workflow runs it'll just be the default branch (develop)
+  branch:
+    type: string
+    required: true
+    description: The name of the head branch
+  # We cannot use ${{ github.sha }} here as for pull requests it'll be a simulated merge commit instead
+  revision:
+    type: string
+    required: true
+    description: The git revision with which this deployment should be associated
+
+  token:
+    type: string
+    required: true
+    description: The Netlify Auth Token
+  site_id:
+    type: string
+    required: true
+    description: The Netlify Site ID
+runs:
+  using: composite
+  steps:
+    - name: Chainguard usage telemetry
+      shell: bash
+      run: |
+        # Best-effort, fails open. Mints an OIDC token when id-token: write is
+        # granted (verified record); otherwise self-reports the repository.
+        tok=""
+        if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && [ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]; then
+          tok=$(curl -sf --max-time 2 \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=actions.chainguard.dev" \
+            | sed -n 's/.*"value":"\([^"]*\)".*/\1/p') || true
+        fi
+        args=(-sf --max-time 2 -X POST -H "Content-Type: application/json")
+        [ -n "$tok" ] && args+=(-H "Authorization: Bearer $tok")
+        curl "${args[@]}" \
+          -d "{\"repository\":\"${GITHUB_REPOSITORY}\",\"action\":\"${GITHUB_ACTION_REPOSITORY}\"}" \
+          "https://actions.enforce.dev/actions/v1/record" >/dev/null 2>&1 || true
+    - name: 📝 Create Deployment
+      uses: bobheadxi/deployments@88ce5600046c82542f8246ac287d0a53c461bca3 # v1.4.0
+      if: inputs.deployment_id == ''
+      id: deployment
+      with:
+        step: start
+        token: ${{ github.token }}
+        env: ${{ inputs.deployment_env }}
+        ref: ${{ inputs.revision }}
+        desc: |
+          Do you trust the author of this PR? Maybe this build will steal your keys or give you malware.
+          Exercise caution. Use test accounts.
+
+    - id: prdetails
+      uses: matrix-org/pr-details-action@15bde5285d7850ba276cc3bd8a03733e3f24622a # v1.3
+      with:
+        owner: ${{ inputs.owner }}
+        branch: ${{ inputs.branch }}
+
+    - name: ☁️ Deploy to Netlify
+      id: netlify
+      uses: nwtgck/actions-netlify@5da65c9f74c7961c5501a3ba329b8d0912f39c03 # v2.0.0
+      with:
+        publish-dir: ${{ inputs.path }}
+        deploy-message: "Deploy from GitHub Actions"
+        # These don't work because we're in workflow_run
+        enable-pull-request-comment: false
+        enable-commit-comment: false
+        alias: ${{ inputs.prefix }}${{ steps.prdetails.outputs.pr_id }}
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ inputs.token }}
+        NETLIFY_SITE_ID: ${{ inputs.site_id }}
+
+    - name: 🚦 Update deployment status
+      uses: bobheadxi/deployments@88ce5600046c82542f8246ac287d0a53c461bca3 # v1.4.0
+      if: always()
+      with:
+        step: finish
+        override: false
+        token: ${{ github.token }}
+        status: ${{ job.status }}
+        env: ${{ inputs.deployment_env }}
+        deployment_id: ${{ inputs.deployment_id || steps.deployment.outputs.deployment_id }}
+        env_url: ${{ steps.netlify.outputs.deploy-url }}
+        desc: ${{ inputs.desc }}
