@@ -9,6 +9,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit | Hardening report |
 |---------|-----|-----------------|------------------|
 | v1 | [`v1`](https://github.com/chainguard-actions/matrix-org-netlify-pr-preview/tree/v1) | [`8d1f7d1`](https://github.com/matrix-org/netlify-pr-preview/commit/8d1f7d1b1e3dc3d3e2b81e35ae86c19cda0556f7) | [`HARDENING.md`](https://github.com/chainguard-actions/matrix-org-netlify-pr-preview/blob/v1/HARDENING.md) |
+| v2 | [`v2`](https://github.com/chainguard-actions/matrix-org-netlify-pr-preview/tree/v2) | [`07b39fd`](https://github.com/matrix-org/netlify-pr-preview/commit/07b39fd107d4d2f7a683f9fb2d84a8de1351f378) | [`HARDENING.md`](https://github.com/chainguard-actions/matrix-org-netlify-pr-preview/blob/v2/HARDENING.md) |
 | v3 | [`v3`](https://github.com/chainguard-actions/matrix-org-netlify-pr-preview/tree/v3) | [`9805cd1`](https://github.com/matrix-org/netlify-pr-preview/commit/9805cd123fc9a7e421e35340a05e1ebc5dee46b5) | [`HARDENING.md`](https://github.com/chainguard-actions/matrix-org-netlify-pr-preview/blob/v3/HARDENING.md) |
 
 ## Privacy
