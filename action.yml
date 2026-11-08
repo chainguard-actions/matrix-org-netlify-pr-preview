@@ -95,7 +95,7 @@ runs:
 
     - name: ☁️ Deploy to Netlify
       id: netlify
-      uses: chainguard-actions/nwtgck-actions-netlify@2da19f03c20ab151f20259cbf4b42c46c1755713 # v2.1.0
+      uses: chainguard-actions/nwtgck-actions-netlify@0360b304b894149884c049aabfc06b73a7418911 # v2.1.0
       with:
         publish-dir: ${{ inputs.path }}
         deploy-message: "Deploy from GitHub Actions"
